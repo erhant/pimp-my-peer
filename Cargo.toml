@@ -1,0 +1,11 @@
+[package]
+name = "pimp-my-peer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hex = "0.4.3"
+libp2p = "0.53.2"
+libp2p-identity = { version = "0.2.9", features = ["secp256k1"] }
+rand = "0.8.5"
+rayon = "1.10.0"
