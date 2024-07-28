@@ -1,11 +1,9 @@
-use libp2p_identity::{
-    secp256k1::{Keypair as Secp256k1Keypair, SecretKey},
-    Keypair, PeerId,
-};
+use libp2p_identity::secp256k1::{Keypair, PublicKey, SecretKey};
+use libp2p_identity::PeerId;
 use rayon::prelude::*;
 use std::time::Duration;
 
-use crate::{keyword::Keyword, strategy::RandomStrategy};
+use crate::{keyword::Keyword, strategy::*};
 
 #[derive(Debug)]
 pub struct PimpMyPeer {
@@ -44,22 +42,33 @@ impl PimpMyPeer {
     }
 
     /// Crunches to find a matching peer id.
-    pub fn crunch(&self, max_iters: usize) -> (Duration, Option<(SecretKey, Keypair, PeerId)>) {
+    pub fn crunch(&self, max_iters: usize) -> (Duration, Option<(SecretKey, PublicKey, PeerId)>) {
         let start_time = std::time::Instant::now();
 
         // TODO: take strategy from outside
-        let result = RandomStrategy::new(max_iters)
+        // let strategy = RandomStrategy::new(max_iters);
+        // TODO: take seed from outside
+        let strategy = LinearStrategy::new(max_iters, &[0x61u8; 32]);
+        let result = strategy
             .into_par_iter()
-            .find_map_first(|key| self.is_valid(key));
+            .find_map_first(|result| self.is_valid(result));
 
         (start_time.elapsed(), result)
     }
 
     /// Creates the peerId from a given secret key, and checks for matches.
     #[inline]
-    pub fn is_valid(&self, secret_key: SecretKey) -> Option<(SecretKey, Keypair, PeerId)> {
-        let keypair: Keypair = Secp256k1Keypair::from(secret_key.clone()).into();
-        let peer_id = PeerId::from_public_key(&keypair.public());
+    pub fn is_valid(
+        &self,
+        result: (SecretKey, PublicKey),
+    ) -> Option<(SecretKey, PublicKey, PeerId)> {
+        // TODO: only in debug mode
+        // let keypair = Keypair::from(result.0.clone());
+        // debug_assert!(keypair.public().eq(&result.1));
+
+        // type-casting required here
+        let pk: libp2p_identity::PublicKey = result.1.clone().into();
+        let peer_id = PeerId::from_public_key(&pk);
 
         // TODO: is it worth to do the par_iter here?
         if self
@@ -67,7 +76,7 @@ impl PimpMyPeer {
             .par_iter()
             .all(|keyword| keyword.check(&peer_id.to_string().to_lowercase()))
         {
-            Some((secret_key, keypair, peer_id))
+            Some((result.0, result.1, peer_id))
         } else {
             None
         }

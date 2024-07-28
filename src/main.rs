@@ -4,7 +4,7 @@ use pimp_my_peer::PimpMyPeer;
 const MAX_ITERS: usize = 10_000_000;
 
 fn main() {
-    const ENDS_WITH: &str = "ac";
+    const ENDS_WITH: &str = "61";
 
     // setup
     let mut pmp = PimpMyPeer::new();
