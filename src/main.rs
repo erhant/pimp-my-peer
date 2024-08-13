@@ -1,4 +1,4 @@
-use pimp_my_peer::PimpMyPeer;
+use pimp_my_peer::{LinearStrategy, PimpMyPeer, RandomStrategy};
 
 /// Maximum number of iterations allowed.
 const MAX_ITERS: usize = 10_000_000;
@@ -11,7 +11,11 @@ fn main() {
     pmp.ends_with(ENDS_WITH);
     println!("{:#?}", pmp);
 
-    let (elapsed, result) = pmp.crunch(MAX_ITERS);
+    // TODO: decide
+    let _random_strategy = RandomStrategy::new(MAX_ITERS);
+    let _linear_strategy = LinearStrategy::new(MAX_ITERS, &[0x61u8; 32]);
+
+    let (elapsed, result) = pmp.crunch(_random_strategy);
     match result {
         Some((secret_key, _, peer_id)) => {
             println!("PeerID:     {}", peer_id);

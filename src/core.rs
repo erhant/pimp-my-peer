@@ -1,9 +1,9 @@
-use libp2p_identity::secp256k1::{Keypair, PublicKey, SecretKey};
+use libp2p_identity::secp256k1::{PublicKey, SecretKey};
 use libp2p_identity::PeerId;
 use rayon::prelude::*;
 use std::time::Duration;
 
-use crate::{keyword::Keyword, strategy::*};
+use crate::keyword::Keyword;
 
 #[derive(Debug)]
 pub struct PimpMyPeer {
@@ -42,13 +42,12 @@ impl PimpMyPeer {
     }
 
     /// Crunches to find a matching peer id.
-    pub fn crunch(&self, max_iters: usize) -> (Duration, Option<(SecretKey, PublicKey, PeerId)>) {
+    pub fn crunch(
+        &self,
+        strategy: impl ParallelIterator<Item = (SecretKey, PublicKey)>,
+    ) -> (Duration, Option<(SecretKey, PublicKey, PeerId)>) {
         let start_time = std::time::Instant::now();
 
-        // TODO: take strategy from outside
-        // let strategy = RandomStrategy::new(max_iters);
-        // TODO: take seed from outside
-        let strategy = LinearStrategy::new(max_iters, &[0x61u8; 32]);
         let result = strategy
             .into_par_iter()
             .find_map_first(|result| self.is_valid(result));
