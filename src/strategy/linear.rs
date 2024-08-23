@@ -1,3 +1,7 @@
+use std::fmt::Debug;
+
+use crate::utils::{jacobian_to_public_key, scalar_to_secret_key};
+
 use super::*;
 
 /// Generates keys with increasing scalars for the secret key.
@@ -15,17 +19,19 @@ impl LinearStrategy {
         let choice = seed.set_b32(seed_bytes);
         assert_eq!(choice.unwrap_u8(), 0, "overflow");
 
-        let mut g = Jacobian::from_ge(&AFFINE_G);
-        context.ecmult_gen(&mut g, &seed);
+        let mut init = Jacobian::from_ge(&AFFINE_G);
+        context.ecmult_gen(&mut init, &seed);
 
         Self {
             max_iters,
             seed,
             context,
-            init: g,
+            init,
         }
     }
 }
+
+impl Strategy for LinearStrategy {}
 
 impl ParallelIterator for LinearStrategy {
     type Item = (SecretKey, PublicKey);
@@ -40,23 +46,16 @@ impl ParallelIterator for LinearStrategy {
                 let i_scalar = Scalar::from_int(i as u32);
 
                 // create secret key from scalar
-                let scalar = i_scalar + self.seed;
-                let secret_key =
-                    SecretKey::try_from_bytes(scalar.b32()).expect("should parse secret key");
+                let sk = i_scalar + self.seed;
 
                 // compute public key
-                let mut p = self.init.clone();
-                self.context.ecmult_gen(&mut p, &scalar); // i + seed
-                let p = Affine::from_gej(&p);
+                let mut pk = self.init.clone();
+                self.context.ecmult_gen(&mut pk, &sk); // i + seed
 
-                // to bytes in compressed public key format
-                let mut bytes: [u8; 33] = [0u8; 33];
-                bytes[0] = if p.y.is_odd() { 0x02 } else { 0x03 };
-                bytes[1..33].copy_from_slice(&p.x.b32());
-                let public_key =
-                    PublicKey::try_from_bytes(&bytes).expect("should parse public key");
-
-                (secret_key, public_key)
+                (
+                    scalar_to_secret_key(&sk).expect("should parse secret key"),
+                    jacobian_to_public_key(&pk).expect("should parse public key"),
+                )
             })
             .drive_unindexed(consumer)
     }
@@ -66,27 +65,12 @@ impl ParallelIterator for LinearStrategy {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_curve_add_mul() {
-        let g = AFFINE_G;
-        const N: usize = 5;
-
-        // add G to itself many times
-        let mut g_add = Jacobian::from_ge(&g);
-        for _ in 1..N {
-            g_add = g_add.add_ge(&g);
-        }
-
-        // multiply G by some scalar
-        let context = ECMultGenContext::new_boxed();
-        let mut g_mul = Jacobian::from_ge(&g);
-        context.ecmult_gen(&mut g_mul, &Scalar::from_int(N as u32));
-
-        // both should be equal
-        assert_eq!(Affine::from_gej(&g_add), Affine::from_gej(&g_mul));
+impl Debug for LinearStrategy {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Linear Strategy {{ max_iters: {}, seed:{:x} }}",
+            self.max_iters, self.seed
+        )
     }
 }

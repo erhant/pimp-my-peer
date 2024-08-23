@@ -1,7 +1,9 @@
 mod core;
-pub use core::PimpMyPeer;
+pub use core::pimp;
 
 mod keyword;
+pub use keyword::Keywords;
 
-mod strategy;
-pub use strategy::{LinearStrategy, RandomStrategy};
+pub mod strategy;
+
+mod utils;

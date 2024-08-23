@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = "4.5.11"
+dashmap = "6.0.1"
 hex = "0.4.3"
 hex-literal = "0.4.1"
 libp2p-identity = { version = "0.2.9", features = [

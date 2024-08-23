@@ -1,30 +1,27 @@
-use pimp_my_peer::{LinearStrategy, PimpMyPeer, RandomStrategy};
+use pimp_my_peer::strategy::*;
+use pimp_my_peer::{pimp, Keywords};
 
 /// Maximum number of iterations allowed.
-const MAX_ITERS: usize = 10_000_000;
+const MAX_ITERS: usize = 20; // 10_000_000;
 
 fn main() {
-    const ENDS_WITH: &str = "61";
+    // define keywrods
+    let keywords = Keywords::new().ends_with("61");
 
-    // setup
-    let mut pmp = PimpMyPeer::new();
-    pmp.ends_with(ENDS_WITH);
-    println!("{:#?}", pmp);
-
-    // TODO: decide
+    // choose strategy
     let _random_strategy = RandomStrategy::new(MAX_ITERS);
     let _linear_strategy = LinearStrategy::new(MAX_ITERS, &[0x61u8; 32]);
+    let _linear_memo_strategy = LinearMemoStrategy::new(MAX_ITERS, &[0x61u8; 32]);
+    let strategy = _linear_memo_strategy;
+    println!("Using strategy: {:#?}", strategy);
 
-    let (elapsed, result) = pmp.crunch(_random_strategy);
+    let (elapsed, result) = pimp(strategy, &keywords);
     match result {
         Some((secret_key, _, peer_id)) => {
             println!("PeerID:     {}", peer_id);
             println!("Secret key: {}", hex::encode(secret_key.to_bytes()));
         }
-        None => println!(
-            "Could not find a peer_id containing the keyword: {}",
-            ENDS_WITH
-        ),
+        None => println!("Could not find a peer_id containing the keyword",),
     }
     println!("That took {:?}", elapsed);
 }
@@ -32,7 +29,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
 
-    /// this can be added as extra
+    /// TODO: add as CLI function
     #[test]
     fn test_pub_to_peer() {
         let public_key_raw =
@@ -44,6 +41,3 @@ mod tests {
         println!("{}", peer_id);
     }
 }
-
-// 106e1a92b129016c77a42e32937f5b18abbd86cbd1efa1ac1411fb2be1a48a79
-// cd7359c362d4d829fd03b6ace4a9c8728d5f0b150ee93c76d5a29741f98c765f

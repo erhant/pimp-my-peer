@@ -1,6 +1,7 @@
 use super::*;
 
 /// Randomly generates keys in parallel.
+#[derive(Debug)]
 pub struct RandomStrategy {
     pub max_iters: usize,
 }
@@ -10,6 +11,8 @@ impl RandomStrategy {
         Self { max_iters }
     }
 }
+
+impl Strategy for RandomStrategy {}
 
 impl ParallelIterator for RandomStrategy {
     type Item = (SecretKey, PublicKey);
