@@ -31,7 +31,7 @@ impl LinearStrategy {
     }
 }
 
-impl Strategy for LinearStrategy {}
+impl IsStrategy for LinearStrategy {}
 
 impl ParallelIterator for LinearStrategy {
     type Item = (SecretKey, PublicKey);

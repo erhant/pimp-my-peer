@@ -7,8 +7,11 @@ use libsecp256k1::{
     util::{TAG_PUBKEY_EVEN, TAG_PUBKEY_ODD},
 };
 
+/// Given a Jacobian point, returns the corresponding public key.
+///
+/// The given point is normalized, and the public key is encoded as a compressed 33-byte array.
 #[inline]
-pub fn jacobian_to_public_key(j: &Jacobian) -> Result<PublicKey, DecodingError> {
+pub(crate) fn jacobian_to_public_key(j: &Jacobian) -> Result<PublicKey, DecodingError> {
     let mut j = Affine::from_gej(j);
     j.x.normalize();
     j.y.normalize();
@@ -23,8 +26,11 @@ pub fn jacobian_to_public_key(j: &Jacobian) -> Result<PublicKey, DecodingError> 
     PublicKey::try_from_bytes(&bytes)
 }
 
+/// Given a Scalar value, returns the corresponding secret key.
+///
+/// The given scalar is encoded as a 32-byte array.
 #[inline]
-pub fn scalar_to_secret_key(s: &Scalar) -> Result<SecretKey, DecodingError> {
+pub(crate) fn scalar_to_secret_key(s: &Scalar) -> Result<SecretKey, DecodingError> {
     SecretKey::try_from_bytes(s.b32())
 }
 
@@ -71,5 +77,19 @@ mod tests {
         let public_key = jacobian_to_public_key(&jacobian).unwrap();
 
         assert_eq!(public_key, expected_public_key)
+    }
+
+    #[test]
+    fn test_pub_to_peer() {
+        let public_key_raw =
+            hex_literal::hex!("03106e1a92b129016c77a42e32937f5b18abbd86cbd1efa1ac1411fb2be1a48a79");
+        let peer_id = libp2p_identity::PublicKey::from(
+            libp2p_identity::secp256k1::PublicKey::try_from_bytes(&public_key_raw).unwrap(),
+        )
+        .to_peer_id();
+        assert_eq!(
+            peer_id.to_string(),
+            "16Uiu2HAmDm8FTmHXZKYX6oUJERunXCEdq3k4U6SLtq6YStxxkoYt"
+        );
     }
 }

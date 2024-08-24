@@ -4,7 +4,7 @@ use rayon::prelude::*;
 use std::time::Duration;
 
 use crate::keyword::Keywords;
-use crate::strategy::Strategy;
+use crate::strategy::IsStrategy;
 
 /// Crunches to find a matching peer id.
 ///
@@ -12,9 +12,10 @@ use crate::strategy::Strategy;
 ///
 /// Returns the first matching secret key, its public key and peer id.
 pub fn pimp(
-    strategy: impl Strategy,
+    strategy: impl IsStrategy,
     keywords: &Keywords,
 ) -> (Duration, Option<(SecretKey, PublicKey, PeerId)>) {
+    println!("Using strategy: {:#?}", strategy);
     let start_time = std::time::Instant::now();
 
     let result = strategy.into_par_iter().find_map_first(|(sk, pk)| {

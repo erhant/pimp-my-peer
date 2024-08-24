@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = "4.5.11"
+clap = { version = "4.5.11", features = ["derive", "env"] }
 dashmap = "6.0.1"
 hex = "0.4.3"
 hex-literal = "0.4.1"

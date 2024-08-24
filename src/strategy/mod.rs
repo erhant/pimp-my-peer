@@ -9,7 +9,7 @@ use rayon::prelude::*;
 /// A strategy to generate keys in parallel.
 ///
 /// - Implements parallel iterator and display.
-pub trait Strategy: ParallelIterator<Item = (SecretKey, PublicKey)> + Debug {}
+pub trait IsStrategy: ParallelIterator<Item = (SecretKey, PublicKey)> + Debug + Sized {}
 
 mod linear;
 pub use linear::LinearStrategy;
@@ -19,3 +19,9 @@ pub use random::RandomStrategy;
 
 mod linear_memo;
 pub use linear_memo::LinearMemoStrategy;
+
+pub enum Strategy {
+    Linear(LinearStrategy),
+    Random(RandomStrategy),
+    LinearMemo(LinearMemoStrategy),
+}

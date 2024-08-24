@@ -30,7 +30,7 @@ impl LinearMemoStrategy {
     }
 }
 
-impl Strategy for LinearMemoStrategy {}
+impl IsStrategy for LinearMemoStrategy {}
 
 impl ParallelIterator for LinearMemoStrategy {
     type Item = (SecretKey, PublicKey);

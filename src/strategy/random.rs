@@ -12,7 +12,7 @@ impl RandomStrategy {
     }
 }
 
-impl Strategy for RandomStrategy {}
+impl IsStrategy for RandomStrategy {}
 
 impl ParallelIterator for RandomStrategy {
     type Item = (SecretKey, PublicKey);
