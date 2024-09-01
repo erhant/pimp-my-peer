@@ -17,6 +17,9 @@ pub use linear::LinearStrategy;
 mod random;
 pub use random::RandomStrategy;
 
+mod identity;
+pub use identity::IdentityStrategy;
+
 mod linear_memo;
 pub use linear_memo::LinearMemoStrategy;
 

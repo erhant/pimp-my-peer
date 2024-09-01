@@ -16,6 +16,7 @@ pub fn pimp(
     keywords: &Keywords,
 ) -> (Duration, Option<(SecretKey, PublicKey, PeerId)>) {
     println!("Using strategy: {:#?}", strategy);
+    println!("Keywords: {:#?}", keywords);
     let start_time = std::time::Instant::now();
 
     let result = strategy.into_par_iter().find_map_first(|(sk, pk)| {
